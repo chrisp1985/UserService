@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: UserService
+  kafka:
+    properties:
+      schema.registry.url: https://psrc-8qmnr.eu-west-2.aws.confluent.cloud # URL of your schema registry
+#  cloud:
+#    stream:
+#      bindings:
+#        input:
+#          destination: employee-details
+#          content-type: application/*+avro
+#        output:
+#          destination: employee-details
+#          content-type: application/*+avro
+
+management:
+  endpoints:
+    health:
+      enabled: true
+    metrics:
+      enabled: true
+    info:
+      enabled: true
+    web:
+      exposure:
+        include: metrics,health,info,prometheus
+
+kafka:
+  # Required connection configs for Kafka producer, consumer, and admin
+  bootstrap.servers: pkc-41wq6.eu-west-2.aws.confluent.cloud:9092
+  security.protocol: SASL_SSL
+  sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username='${CLUSTER_API_KEY}' password='${CLUSTER_API_SECRET}';
+  sasl.mechanism: PLAIN
+  # Required for correctness in Apache Kafka clients prior to 2.6
+  client.dns.lookup: use_all_dns_ips
+  schema.registry.url: https://psrc-8qmnr.eu-west-2.aws.confluent.cloud # URL of your schema registry

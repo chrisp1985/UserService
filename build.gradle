@@ -1,0 +1,60 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.5'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.chrisp1985'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		url 'https://packages.confluent.io/maven/'
+	}
+}
+
+ext {
+	set('springCloudVersion', "2023.0.3")
+}
+
+dependencies {
+	// Kafka
+	implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '3.4.0'
+
+	// Spring Kafka
+	implementation 'org.springframework.kafka:spring-kafka'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+	// Spring
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator:3.3.4'
+	implementation 'org.springframework:spring-webflux:6.1.13'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok:1.18.34'
+	annotationProcessor 'org.projectlombok:lombok:1.18.34'
+
+	// Test
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Observability
+	implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.13.6'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
