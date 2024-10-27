@@ -58,3 +58,15 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+docker {
+	springBootApplication {
+		baseImage = 'openjdk:17.0.1-jdk-slim'
+		//ports = [8080]
+
+		images = ["$build_image_name:latest"]
+		jvmArgs = ['-Dspring.profiles.active=prod', '-Xmx2048m']
+	}
+}
+
+// To build, run gradlew build dockerBuildImage
