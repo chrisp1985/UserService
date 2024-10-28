@@ -108,31 +108,37 @@ jobs:
         uses: gradle/actions/dependency-submission@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
 
 
-#  deploy:
-#    runs-on: ubuntu-latest
-#    needs: build  # Ensures that the build job completes successfully first
-#
-#    env:
-#      TF_VAR_project_name: "UserService" # example environment variable for Terraform, adjust as necessary
-#
-#    steps:
-#      # Step 1: Check out the code
-#      - name: Checkout Code
-#        uses: actions/checkout@v3
-#
-#      # Step 2: Set up Terraform
-#      - name: Set up Terraform
-#        uses: hashicorp/setup-terraform@v2
-#        with:
-#          terraform_version: 1.4.6  # Specify the Terraform version you need
-#
-#      # Step 3: Initialize Terraform
-#      - name: Terraform Init
-#        run: terraform init
-#        working-directory: ./infrastructure
-#
-#      # Step 4: Apply Terraform configuration
-#      - name: Terraform Apply
-#        id: apply
-#        run: terraform apply -auto-approve
-#        working-directory: ./infrastructure
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build  # Ensures that the build job completes successfully first
+
+    env:
+      TF_VAR_project_name: "UserService" # example environment variable for Terraform, adjust as necessary
+      CONFLUENT_CLOUD_KEY: ${{ secrets.CONFLUENT_CLOUD_KEY }}
+      CONFLUENT_CLOUD_SECRET: ${{ secrets.CONFLUENT_CLOUD_SECRET }}
+
+    steps:
+      # Step 1: Check out the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.6  # Specify the Terraform version you need
+
+      # Step 3: Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./infrastructure
+
+      # Step 4: Apply Terraform configuration
+      - name: Terraform Apply
+        id: apply
+        run: |
+          terraform apply -auto-approve \
+            -var "confluent_cloud_key=$CONFLUENT_CLOUD_KEY" \
+            -var "confluent_cloud_secret=$CONFLUENT_CLOUD_SECRET" \
+            -var "unique_id=${{ github.sha }}"
+        working-directory: ./infrastructure
