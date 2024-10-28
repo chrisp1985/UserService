@@ -110,7 +110,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build  # Ensures that the build job completes successfully first
+    needs: build_and_deploy  # Ensures that the build job completes successfully first
 
     env:
       TF_VAR_project_name: "UserService" # example environment variable for Terraform, adjust as necessary
