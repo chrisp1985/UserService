@@ -112,11 +112,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build_and_deploy  # Ensures that the build job completes successfully first
 
-    env:
-      TF_VAR_project_name: "UserService" # example environment variable for Terraform, adjust as necessary
-      CONFLUENT_CLOUD_KEY: ${{ secrets.CONFLUENT_CLOUD_KEY }}
-      CONFLUENT_CLOUD_SECRET: ${{ secrets.CONFLUENT_CLOUD_SECRET }}
-
     steps:
       # Step 1: Check out the code
       - name: Checkout Code
@@ -138,8 +133,8 @@ jobs:
         id: apply
         run: |
           terraform apply -auto-approve \
-            -var "confluent_cloud_key=$CONFLUENT_CLOUD_KEY" \
-            -var "confluent_cloud_secret=$CONFLUENT_CLOUD_SECRET" \
+            -var "confluent_cloud_key=${{ secrets.CONFLUENT_CLOUD_KEY }}" \
+            -var "confluent_cloud_secret=${{ secrets.CONFLUENT_CLOUD_SECRET }}" \
             -var "unique_id=${{ github.sha }}" \
             -var "image_tag=$IMAGE_TAG"
         working-directory: ./infrastructure
