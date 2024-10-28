@@ -18,8 +18,8 @@ env:
   IMAGE_NAME: user-service-docker-image           # set this to the name of the container in the
   # containerDefinitions section of your task definition
   IMAGE_TAG: ${{ github.sha }}
-  CONFLUENT_CLOUD_KEY: ${{ secrets.CONFLUENT_CLOUD_KEY }}
-  CONFLUENT_CLOUD_SECRET: ${{ secrets.CONFLUENT_CLOUD_SECRET }}
+  CONFLUENT_CLOUD_KEY: ${{ secrets.CLUSTER_API_KEY }}
+  CONFLUENT_CLOUD_SECRET: ${{ secrets.CLUSTER_API_SECRET }}
 
 jobs:
   build_and_deploy:
