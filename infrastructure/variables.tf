@@ -15,3 +15,9 @@ variable "unique_id" {
   type        = string
   sensitive   = true
 }
+
+variable "image_tag" {
+  description = "Image Tag pulled from Github workflow."
+  type        = string
+  sensitive   = false
+}
