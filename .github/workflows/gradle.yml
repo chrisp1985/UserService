@@ -140,6 +140,7 @@ jobs:
           terraform plan \
           -var "aws_access_key=$AWS_ACCESS_KEY" \
           -var "aws_access_secret=$AWS_ACCESS_SECRET" \
+          -var "image_tag=$IMAGE" \
           -out=tfplan || export exitcode=$?
           
           echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
@@ -162,7 +163,5 @@ jobs:
           CONFLUENT_SECRET: ${{ secrets.CLUSTER_API_SECRET }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          terraform apply \
-          -var "image_tag=$IMAGE" \
-          -auto-approve tfplan
+          terraform apply -auto-approve tfplan
         working-directory: ./infrastructure
