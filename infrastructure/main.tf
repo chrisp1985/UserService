@@ -29,19 +29,21 @@ resource "time_sleep" "waitrolecreate" {
 
 ## Create App Runner
 resource "aws_apprunner_service" "example" {
-  service_name = "aws_app_runner_service_" + var.unique_id
+  service_name = format("%s_%s","aws_app_runner_service",var.unique_id)
 
   source_configuration {
+    authentication_configuration {
+      access_role_arn = aws_iam_role.apprunner_iam_role.arn
+    }
     image_repository {
       image_configuration {
-        access_role_arn = aws_iam_role.apprunner_iam_role.arn
         port = "8000"
-#        runtime_environment_variables = {
-#          "CLUSTER_API_KEY" = var.cloud_cluster_api_key
-#          "CLUSTER_API_SECRET" = var.cloud_cluster_api_secret
-#        }
+        runtime_environment_variables = {
+          "CLUSTER_API_KEY" = var.cloud_cluster_api_key
+          "CLUSTER_API_SECRET" = var.cloud_cluster_api_secret
+        }
       }
-      image_identifier      = "195571588534.dkr.ecr.eu-west-2.amazonaws.com/chrisp1985_ecr_docker_repo:" + var.image_tag
+      image_identifier      = format("%s:%s","195571588534.dkr.ecr.eu-west-2.amazonaws.com/chrisp1985_ecr_docker_repo",var.image_tag)
       image_repository_type = "ECR"
     }
     auto_deployments_enabled = true
