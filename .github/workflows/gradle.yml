@@ -147,6 +147,7 @@ jobs:
           else 
             exit 0
           fi
+        working-directory: ./infrastructure
 
       # Step 5: Apply Terraform configuration
       - name: Terraform Apply
