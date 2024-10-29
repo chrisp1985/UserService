@@ -135,8 +135,8 @@ jobs:
         id: apply
         run: |
           terraform apply -auto-approve \
-            -var "confluent_cloud_key=$CONFLUENT_CLOUD_KEY" \
-            -var "confluent_cloud_secret=$CONFLUENT_CLOUD_SECRET" \
+#            -var "confluent_cloud_key=$CONFLUENT_CLOUD_KEY" \
+#            -var "confluent_cloud_secret=$CONFLUENT_CLOUD_SECRET" \
             -var "unique_id=${{ github.sha }}" \
             -var "image_tag=$IMAGE_TAG"
         working-directory: ./infrastructure
