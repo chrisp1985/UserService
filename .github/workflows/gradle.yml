@@ -137,12 +137,13 @@ jobs:
         id: tf-plan
         run: |
           export exitcode=0
-          terraform plan -detailed-exitcode -no-color -out tfplan \
+          terraform plan \
             -var "aws_access_key_value=${{ secrets.AWS_ACCESS_KEY_ID }}" \
             -var "aws_secret_key_value=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \              
             -var "confluent_cloud_key=${{ secrets.CLUSTER_API_KEY }}" \
             -var "confluent_cloud_secret=${{ secrets.CLUSTER_API_SECRET }}" \  
-            -var "image_tag=${{ github.sha }}" || export exitcode=$?
+            -var "image_tag=${{ github.sha }}" \
+            -out tfplan || export exitcode=$?
           
           echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
           
