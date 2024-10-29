@@ -138,7 +138,9 @@ jobs:
         run: |
           export exitcode=0
           terraform plan \
-            -out=tfplan || export exitcode=$?
+          -var "aws_access_key=$AWS_ACCESS_KEY" \
+          -var "aws_access_secret=$AWS_ACCESS_SECRET" \
+          -out=tfplan || export exitcode=$?
           
           echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
           
