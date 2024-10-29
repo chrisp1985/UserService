@@ -5,8 +5,8 @@ terraform {
 
 provider "aws" {
   region = "eu-west-2"
-  access_key = var.aws_access_key_value
-  secret_key = var.aws_secret_key_value
+  access_key = var.aws_access_key
+  secret_key = var.aws_access_secret
 }
 
 ## Create permissions
@@ -48,8 +48,8 @@ resource "aws_apprunner_service" "example" {
       image_configuration {
         port = "8000"
         runtime_environment_variables = {
-          "CLUSTER_API_KEY" = var.cloud_cluster_api_key
-          "CLUSTER_API_SECRET" = var.cloud_cluster_api_secret
+          "CLUSTER_API_KEY" = var.confluent_key
+          "CLUSTER_API_SECRET" = var.confluent_secret
         }
       }
       image_identifier      = format("%s:%s","195571588534.dkr.ecr.eu-west-2.amazonaws.com/chrisp1985_ecr_docker_repo",var.image_tag)

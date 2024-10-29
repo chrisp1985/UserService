@@ -1,25 +1,25 @@
-variable "cloud_cluster_api_key" {
+variable "confluent_key" {
   description = "Confluent Cloud API Key"
   type        = string
   sensitive   = true
   default     = "cloud api key default"
 }
 
-variable "cloud_cluster_api_secret" {
+variable "confluent_secret" {
   description = "Confluent Cloud API Secret"
   type        = string
   sensitive   = true
   default     = "cloud api secret default"
 }
 
-variable "aws_access_key_value" {
+variable "aws_access_key" {
   description = "AWS API Key"
   type        = string
   sensitive   = true
   default     = "aws-keys-default"
 }
 
-variable "aws_secret_key_value" {
+variable "aws_access_secret" {
   description = "AWS API Secret"
   type        = string
   sensitive   = true
