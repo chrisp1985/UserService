@@ -20,6 +20,8 @@ env:
   IMAGE_TAG: ${{ github.sha }}
   CONFLUENT_CLOUD_KEY: ${{ secrets.CLUSTER_API_KEY }}
   CONFLUENT_CLOUD_SECRET: ${{ secrets.CLUSTER_API_SECRET }}
+  AWS_ACCESS_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_ACCESS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
   build_and_deploy:
@@ -59,8 +61,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: $AWS_ACCESS_ID
+          aws-secret-access-key: $AWS_ACCESS_SECRET
           aws-region: eu-west-2
 
       - name: Log in to Amazon ECR
@@ -135,6 +137,8 @@ jobs:
         id: apply
         run: |
           terraform apply -auto-approve \
+            -var "aws_access_key_value=$AWS_ACCESS_ID" \
+            -var "aws_secret_key_value=$AWS_ACCESS_SECRET" \              
             -var "confluent_cloud_key=$CONFLUENT_CLOUD_KEY" \
             -var "confluent_cloud_secret=$CONFLUENT_CLOUD_SECRET" \          
             -var "unique_id=${{ github.sha }}" \

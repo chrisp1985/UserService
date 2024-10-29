@@ -12,6 +12,20 @@ variable "cloud_cluster_api_secret" {
   default     = "cloud api secret default"
 }
 
+variable "aws_access_key_value" {
+  description = "AWS API Key"
+  type        = string
+  sensitive   = true
+  default     = "aws key default"
+}
+
+variable "aws_secret_key_value" {
+  description = "AWS API Secret"
+  type        = string
+  sensitive   = true
+  default     = "aws secret default"
+}
+
 variable "unique_id" {
   description = "Unique Id from Github sha."
   type        = string

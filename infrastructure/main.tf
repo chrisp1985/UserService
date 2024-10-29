@@ -1,4 +1,9 @@
 ## Deploy App runner, pulling from ECR.
+provider "aws" {
+  region = "eu-west-2"
+  access_key = var.access_key_value
+  secret_key = var.secret_key_value
+}
 
 ## Create permissions
 resource "aws_iam_role" "apprunner_iam_role" {
