@@ -138,11 +138,6 @@ jobs:
         run: |
           export exitcode=0
           terraform plan \
-            -var "confluent_cloud_key=$CONFLUENT_KEY" \
-            -var "confluent_cloud_secret=$CONFLUENT_SECRET" \  
-            -var "aws_access_key_value=$AWS_ACCESS_KEY" \
-            -var "aws_secret_key_value=$AWS_ACCESS_SECRET" \              
-            -var "image_tag=$IMAGE" \
             -out=tfplan || export exitcode=$?
           
           echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
@@ -165,10 +160,5 @@ jobs:
           CONFLUENT_SECRET: ${{secrets.CLUSTER_API_SECRET}}
           IMAGE: ${{github.sha}}
         run: |
-          terraform apply -auto-approve tfplan \
-            -var "aws_access_key_value=$AWS_ACCESS_KEY" \
-            -var "aws_secret_key_value=$AWS_ACCESS_SECRET" \              
-            -var "confluent_cloud_key=$CONFLUENT_KEY" \
-            -var "confluent_cloud_secret=$CONFLUENT_SECRET" \  
-            -var "image_tag=$IMAGE"
+          terraform apply -auto-approve tfplan
         working-directory: ./infrastructure
