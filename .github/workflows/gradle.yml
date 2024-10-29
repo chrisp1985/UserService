@@ -132,16 +132,27 @@ jobs:
         run: terraform init
         working-directory: ./infrastructure
 
-      # Step 4a: Get current directory
-      - name: Get working directory
-        run: echo "WORKING_DIRECTORY=$(pwd)"
-        working-directory: ./infrastructure
+      # Step 4a: Plan Terraform
+      - name: Terraform Plan
+        id: tf-plan
+        run: |
+          export exitcode=0
+          terraform plan -detailed-exitcode -no-color -out tfplan || export exitcode=$?
+          
+          echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
+          
+          if [ $exitcode -eq 1 ]; then
+            echo Terraform Plan Failed!
+            exit 1
+          else 
+            exit 0
+          fi
 
-      # Step 4b: Apply Terraform configuration
+      # Step 5: Apply Terraform configuration
       - name: Terraform Apply
         id: apply
         run: |
-          terraform apply -auto-approve \
+          terraform apply -auto-approve tfplan \
             -var "aws_access_key_value=${{ secrets.AWS_ACCESS_KEY_ID }}" \
             -var "aws_secret_key_value=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \              
             -var "confluent_cloud_key=${{ secrets.CLUSTER_API_KEY }}" \
