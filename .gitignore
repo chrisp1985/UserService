@@ -38,4 +38,5 @@ out/
 
 ### Terraform ###
 infrastructure/.terraform/
-.tfstate
+terraform.tfstate
+.terraform.lock.hcl

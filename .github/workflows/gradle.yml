@@ -16,12 +16,6 @@ env:
   ECR_REPOSITORY: chrisp1985_ecr_docker_repo         # set this to your Amazon ECR repository name
   ECR_REPOSITORY_URI: 195571588534.dkr.ecr.eu-west-2.amazonaws.com/chrisp1985_ecr_docker_repo
   IMAGE_NAME: user-service-docker-image           # set this to the name of the container in the
-  # containerDefinitions section of your task definition
-  IMAGE_TAG: ${{ github.sha }}
-  CONFLUENT_CLOUD_KEY: ${{ secrets.CLUSTER_API_KEY }}
-  CONFLUENT_CLOUD_SECRET: ${{ secrets.CLUSTER_API_SECRET }}
-  AWS_ACCESS_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_ACCESS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
   build_and_deploy:
@@ -135,14 +129,20 @@ jobs:
       # Step 4a: Plan Terraform
       - name: Terraform Plan
         id: tf-plan
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          CONFLUENT_KEY: ${{secrets.CLUSTER_API_KEY}}
+          CONFLUENT_SECRET: ${{secrets.CLUSTER_API_SECRET}}
+          IMAGE: ${{github.sha}}
         run: |
           export exitcode=0
           terraform plan \
-            -var "aws_access_key_value=${{secrets.AWS_ACCESS_KEY_ID}}" \
-            -var "aws_secret_key_value=${{secrets.AWS_SECRET_ACCESS_KEY}}" \              
-            -var "confluent_cloud_key=${{secrets.CLUSTER_API_KEY}}" \
-            -var "confluent_cloud_secret=${{secrets.CLUSTER_API_SECRET}}" \  
-            -var "image_tag=${{github.sha}}" \
+            -var "aws_access_key_value=$AWS_ACCESS_KEY" \
+            -var "aws_secret_key_value=$AWS_ACCESS_SECRET" \              
+            -var "confluent_cloud_key=$CONFLUENT_KEY" \
+            -var "confluent_cloud_secret=$CONFLUENT_SECRET" \  
+            -var "image_tag=$IMAGE" \
             -out=tfplan || export exitcode=$?
           
           echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
@@ -158,11 +158,17 @@ jobs:
       # Step 5: Apply Terraform configuration
       - name: Terraform Apply
         id: apply
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          CONFLUENT_KEY: ${{secrets.CLUSTER_API_KEY}}
+          CONFLUENT_SECRET: ${{secrets.CLUSTER_API_SECRET}}
+          IMAGE: ${{github.sha}}
         run: |
           terraform apply -auto-approve tfplan \
-            -var "aws_access_key_value=${{secrets.AWS_ACCESS_KEY_ID}}" \
-            -var "aws_secret_key_value=${{secrets.AWS_SECRET_ACCESS_KEY}}" \              
-            -var "confluent_cloud_key=${{secrets.CLUSTER_API_KEY}}" \
-            -var "confluent_cloud_secret=${{secrets.CLUSTER_API_SECRET}}" \  
-            -var "image_tag=${{github.sha}}"
+            -var "aws_access_key_value=$AWS_ACCESS_KEY" \
+            -var "aws_secret_key_value=$AWS_ACCESS_SECRET" \              
+            -var "confluent_cloud_key=$CONFLUENT_KEY" \
+            -var "confluent_cloud_secret=$CONFLUENT_SECRET" \  
+            -var "image_tag=$IMAGE"
         working-directory: ./infrastructure
