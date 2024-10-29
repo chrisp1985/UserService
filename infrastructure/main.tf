@@ -52,7 +52,7 @@ resource "aws_apprunner_service" "example" {
 #          "CLUSTER_API_SECRET" = var.confluent_secret
 #        }
       }
-      image_identifier      = format("%s:%s","195571588534.dkr.ecr.eu-west-2.amazonaws.com/chrisp1985_ecr_docker_repo",var.image_tag)
+      image_identifier      = format("%s:%s","195571588534.dkr.ecr.eu-west-2.amazonaws.com/chrisp1985_ecr_docker_repo",var.image)
       image_repository_type = "ECR"
     }
     auto_deployments_enabled = true
