@@ -26,16 +26,9 @@ variable "aws_access_secret" {
   default     = "aws-secret-default"
 }
 
-variable "unique_id" {
-  description = "Unique Id from Github sha."
-  type        = string
-  sensitive   = true
-  default     = "unique id default"
-}
-
-variable "image_tag" {
+variable "image" {
   description = "Image Tag pulled from Github workflow."
   type        = string
   sensitive   = false
-  default     = "image tag default"
+  default     = "image-tag-default"
 }

@@ -33,12 +33,12 @@ resource "aws_iam_role_policy_attachment" "myrolespolicy" {
 
 resource "time_sleep" "waitrolecreate" {
   depends_on = [aws_iam_role.apprunner_iam_role]
-  create_duration = "60s"
+  create_duration = "10s"
 }
 
 ## Create App Runner
 resource "aws_apprunner_service" "example" {
-  service_name = format("%s_%s","aws_app_runner_service",var.unique_id)
+  service_name = "aws_app_runner_service"
 
   source_configuration {
     authentication_configuration {
