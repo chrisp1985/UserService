@@ -26,7 +26,7 @@ variable "aws_access_secret" {
   default     = "aws-secret-default"
 }
 
-variable "image" {
+variable "image_tag" {
   description = "Image Tag pulled from Github workflow."
   type        = string
   sensitive   = false
