@@ -137,10 +137,10 @@ jobs:
         id: apply
         run: |
           terraform apply -auto-approve \
-            -var "aws_access_key_value=$AWS_ACCESS_ID" \
-            -var "aws_secret_key_value=$AWS_ACCESS_SECRET" \              
-            -var "confluent_cloud_key=$CONFLUENT_CLOUD_KEY" \
-            -var "confluent_cloud_secret=$CONFLUENT_CLOUD_SECRET" \          
+            -var "aws_access_key_value=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            -var "aws_secret_key_value=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \              
+            -var "confluent_cloud_key=${{ secrets.CLUSTER_API_KEY }}" \
+            -var "confluent_cloud_secret=${{ secrets.CLUSTER_API_SECRET }}" \          
             -var "unique_id=${{ github.sha }}" \
-            -var "image_tag=$IMAGE_TAG"
+            -var "image_tag=${{ github.sha }}"
         working-directory: ./infrastructure
