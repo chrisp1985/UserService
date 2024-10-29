@@ -132,7 +132,11 @@ jobs:
         run: terraform init
         working-directory: ./infrastructure
 
-      # Step 4: Apply Terraform configuration
+      # Step 4a: Get current directory
+      - name: Get working directory
+        run: echo "WORKING_DIRECTORY=$(pwd)"
+
+      # Step 4b: Apply Terraform configuration
       - name: Terraform Apply
         id: apply
         run: |
