@@ -140,6 +140,8 @@ jobs:
           terraform plan \
           -var "aws_access_key=$AWS_ACCESS_KEY" \
           -var "aws_access_secret=$AWS_ACCESS_SECRET" \
+          -var "confluent_key=$CONFLUENT_KEY" \
+          -var "confluent_secret=$CONFLUENT_SECRET" \
           -var "image_tag=$IMAGE_TAG" \
           -out=tfplan || export exitcode=$?
           

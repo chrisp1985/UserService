@@ -47,10 +47,10 @@ resource "aws_apprunner_service" "example" {
     image_repository {
       image_configuration {
         port = "8000"
-#        runtime_environment_variables = {
-#          "CLUSTER_API_KEY" = var.confluent_key
-#          "CLUSTER_API_SECRET" = var.confluent_secret
-#        }
+        runtime_environment_variables = {
+          "CLUSTER_API_KEY" = var.confluent_key
+          "CLUSTER_API_SECRET" = var.confluent_secret
+        }
       }
       image_identifier      = format("%s:%s","195571588534.dkr.ecr.eu-west-2.amazonaws.com/chrisp1985_ecr_docker_repo",var.image_tag)
       image_repository_type = "ECR"
