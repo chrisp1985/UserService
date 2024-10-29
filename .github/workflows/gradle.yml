@@ -139,7 +139,7 @@ jobs:
           export exitcode=0
           terraform plan \
           -var "aws_access_key=$AWS_ACCESS_KEY" \
-          -var "aws_access_secret=$AWS_ACCESS_SECRET" \        
+          -var "aws_access_secret=$AWS_ACCESS_SECRET" \
           -out=tfplan || export exitcode=$?
           
           echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
@@ -163,6 +163,6 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           terraform apply \
-          -var "image_tag=$IMAGE" \  
+          -var "image_tag=$IMAGE" \
           -auto-approve tfplan
         working-directory: ./infrastructure
