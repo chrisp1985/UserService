@@ -2,14 +2,14 @@ variable "confluent_key" {
   description = "Confluent Cloud API Key"
   type        = string
   sensitive   = true
-  default     = "cloud api key default"
+  default     = "cloud-api-key-default"
 }
 
 variable "confluent_secret" {
   description = "Confluent Cloud API Secret"
   type        = string
   sensitive   = true
-  default     = "cloud api secret default"
+  default     = "cloud-api-secret-default"
 }
 
 variable "aws_access_key" {

@@ -58,6 +58,13 @@ resource "aws_apprunner_service" "example" {
     auto_deployments_enabled = true
   }
 
+  health_check_configuration {
+    path = "/actuator/health"
+    healthy_threshold = 3
+    unhealthy_threshold = 5
+    interval = 5
+  }
+
   tags = {
     Name = "user-service-apprunner-service"
   }

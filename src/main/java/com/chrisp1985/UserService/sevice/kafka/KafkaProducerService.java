@@ -1,6 +1,7 @@
 package com.chrisp1985.UserService.sevice.kafka;
 
 import com.chrisp1985.UserService.dto.User;
+import com.chrisp1985.UserService.metrics.UserServiceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -19,6 +20,12 @@ public class KafkaProducerService {
 
     @Autowired
     private KafkaTemplate<String, User> kafkaTemplate;
+    private UserServiceMetrics userServiceMetrics;
+
+    @Autowired
+    public KafkaProducerService(UserServiceMetrics userServiceMetrics) {
+        this.userServiceMetrics = userServiceMetrics;
+    }
 
     public User generateUser() {
         String[] names = {
@@ -40,6 +47,7 @@ public class KafkaProducerService {
         User randomUser = generateUser();
         log.info("Sending: {}", randomUser);
         sendKafkaMessage(randomUser);
+        userServiceMetrics.recordSuccess();
 
     }
 
