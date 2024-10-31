@@ -41,17 +41,16 @@ public class KafkaProducerService {
         return randomUser;
     }
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 20000)
     public void sendTransaction() throws IOException {
 
         User randomUser = generateUser();
         log.info("Sending: {}", randomUser);
         sendKafkaMessage(randomUser);
-        userServiceMetrics.recordSuccess();
 
     }
 
-    public void sendKafkaMessage(User user) throws IOException {
+    public void sendKafkaMessage(User user) {
         kafkaTemplate.send(TOPIC_NAME, user.name(), user)
                 .whenComplete((sendResult, throwable) -> {
                     if(throwable!=null) {
@@ -64,6 +63,7 @@ public class KafkaProducerService {
     }
 
     private void onSuccess(SendResult<String, User> sendResult) {
+        userServiceMetrics.recordSuccess();
         log.info("Received :\n" +
                         "Topic: {}, Partition: {}, Offset: {}, Timestamp: {}",
                 sendResult.getRecordMetadata().topic(),
