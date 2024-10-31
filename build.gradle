@@ -65,8 +65,7 @@ tasks.named('test') {
 
 docker {
 	springBootApplication {
-		baseImage = 'openjdk:17.0.1-jdk-slim'
-		//ports = [8080]
+		baseImage = 'openjdk:24-jdk-slim-bookworm'
 
 		images = ["$build_image_name:latest"]
 		jvmArgs = ['-Dspring.profiles.active=prod', '-Xmx2048m']
