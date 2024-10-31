@@ -46,7 +46,7 @@ resource "aws_apprunner_service" "example" {
     }
     image_repository {
       image_configuration {
-        port = "8000"
+        port = "8080"
         runtime_environment_variables = {
           "CLUSTER_API_KEY" = var.confluent_key
           "CLUSTER_API_SECRET" = var.confluent_secret
