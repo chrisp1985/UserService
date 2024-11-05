@@ -12,8 +12,14 @@ public class UserServiceMetrics extends AbstractMetrics {
     }
 
     public void recordSuccess() {
-        recordCounter(METRIC_NAME,
-                RESULT_TAG, Result.SUCCESS.name(),
-                FAILURE_REASON_TAG, NO_REASON);
+        recordCounter(METRIC_NAME, tags());
+    }
+
+    public Double getRecordCount() {
+        return meterRegistry.counter(METRIC_NAME, tags()).count();
+    }
+
+    private String[] tags() {
+        return new String[]{RESULT_TAG, Result.SUCCESS.name(), FAILURE_REASON_TAG, NO_REASON};
     }
 }

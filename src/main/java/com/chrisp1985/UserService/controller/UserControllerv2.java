@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/users/v2/kafkaUser")
+@RequestMapping("/user/v2/kafkaUser")
 public class UserControllerv2 {
 
     @Autowired

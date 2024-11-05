@@ -15,6 +15,15 @@ java {
 	}
 }
 
+sourceSets {
+	integrationTest {
+		java {
+			srcDir 'src/integration-test/java'
+			srcDir 'build/generated/java'
+		}
+	}
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -56,8 +65,16 @@ dependencies {
 	// Test
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-rest'
-	testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
-	testFixturesApi "org.testcontainers:testcontainers:$testContainersVersion"
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.1.4'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
+	testImplementation 'io.rest-assured:rest-assured'
+
+	testImplementation 'org.testcontainers:testcontainers:1.20.3'
+	testImplementation 'org.testcontainers:kafka:1.20.3'
+	testImplementation 'org.testcontainers:junit-jupiter:1.20.3'
+
+
 
 	// Observability
 	implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.13.6'

@@ -2,28 +2,28 @@ package com.chrisp1985.UserService.sevice.kafka;
 
 import com.chrisp1985.UserService.dto.User;
 import com.chrisp1985.UserService.metrics.UserServiceMetrics;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Slf4j
 public class KafkaProducerService {
 
-    static final String TOPIC_NAME = "test-topic";
+    private static final String TOPIC_NAME = "test-topic";
+
+    private final KafkaTemplate<String, User> kafkaTemplate;
+
+    private final UserServiceMetrics userServiceMetrics;
 
     @Autowired
-    private KafkaTemplate<String, User> kafkaTemplate;
-    private UserServiceMetrics userServiceMetrics;
-
-    @Autowired
-    public KafkaProducerService(UserServiceMetrics userServiceMetrics) {
+    public KafkaProducerService(UserServiceMetrics userServiceMetrics, KafkaTemplate<String, User> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
         this.userServiceMetrics = userServiceMetrics;
     }
 
@@ -42,7 +42,8 @@ public class KafkaProducerService {
     }
 
     @Scheduled(fixedRate = 20000)
-    public void sendTransaction() throws IOException {
+    @SneakyThrows
+    public void sendTransaction() {
 
         User randomUser = generateUser();
         log.info("Sending: {}", randomUser);
@@ -70,10 +71,11 @@ public class KafkaProducerService {
                 sendResult.getRecordMetadata().partition(),
                 sendResult.getRecordMetadata().offset(),
                 sendResult.getRecordMetadata().timestamp());
+        log.info("Created {} new events since start.", userServiceMetrics.getRecordCount());
     }
 
     private void onFailure(Throwable throwable) {
-        log.error("Error occurred: {}", throwable);
+        log.error("Error occurred: {}", throwable.getMessage());
     }
 
 }

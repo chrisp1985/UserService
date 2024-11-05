@@ -17,20 +17,17 @@ import java.util.Map;
 @Configuration
 public class KafkaProducerConfig {
 
-    @Value("${kafka.sasl.jaas.config}")
+    @Value("${spring.kafka.producer.sasl.jaas.config}")
     String sasl_jaas_config;
 
-    @Value("${kafka.bootstrap.servers}")
+    @Value("${spring.kafka.producer.bootstrap-servers}")
     String bootstrap_servers;
 
-    @Value("${kafka.security.protocol}")
+    @Value("${spring.kafka.producer.security.protocol}")
     String security_protocol;
 
-    @Value("${kafka.sasl.mechanism}")
+    @Value("${spring.kafka.producer.sasl.mechanism}")
     String sasl_mechanism;
-
-    @Value("${kafka.schema.registry.url}")
-    String schema_registry_url;
 
     @Bean
     public <T> ProducerFactory<String, T> producerFactory() {
