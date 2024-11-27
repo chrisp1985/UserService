@@ -33,11 +33,11 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.properties.schema.registry.url}")
     String schema_registry_url;
 
-    @Value("${spring.kafka.auth.user.api.key}")
+    @Value("${spring.kafka.producer.auth.user.api.key}")
     String schema_registry_api_key;
 
-    @Value("${spring.kafka.auth.user.api.password}")
-    String schema_registry_api_password;
+    @Value("${spring.kafka.producer.auth.user.api.secret}")
+    String schema_registry_api_secret;
 
     @Bean
     public <T> ProducerFactory<String, T> producerFactory() {
@@ -50,7 +50,7 @@ public class KafkaProducerConfig {
         producerProps.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schema_registry_url);
         producerProps.put("security.protocol", security_protocol);
         producerProps.put("basic.auth.credentials.source", "USER_INFO");
-        producerProps.put("basic.auth.user.info", String.format("%s:%s", schema_registry_api_key, schema_registry_api_password));
+        producerProps.put("basic.auth.user.info", String.format("%s:%s", schema_registry_api_key, schema_registry_api_secret));
 
         return new DefaultKafkaProducerFactory<>(producerProps);
     }

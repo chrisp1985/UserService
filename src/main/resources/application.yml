@@ -13,7 +13,7 @@ spring:
         user:
           api:
             key: ${SCHEMA_API_KEY}
-            password: ${SCHEMA_API_SECRET}
+            secret: ${SCHEMA_API_SECRET}
     properties:
       schema.registry.url: https://psrc-8qmnr.eu-west-2.aws.confluent.cloud # URL of your schema registry
 
