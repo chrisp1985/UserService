@@ -136,7 +136,7 @@ jobs:
           -var "confluent_key=$CONFLUENT_KEY" \
           -var "confluent_secret=$CONFLUENT_SECRET" \
           -var "confluent_schema_key=$SCHEMA_API_KEY" \
-          -var "confluent_schema_secret=SCHEMA_API_SECRET" \
+          -var "confluent_schema_secret=$SCHEMA_API_SECRET" \
           -var "image_tag=$IMAGE_TAG" \
           -out=tfplan || export exitcode=$?
           
