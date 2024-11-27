@@ -159,7 +159,7 @@ jobs:
           CONFLUENT_KEY: ${{ secrets.CLUSTER_API_KEY }}
           CONFLUENT_SECRET: ${{ secrets.CLUSTER_API_SECRET }}
           SCHEMA_API_KEY: ${{secrets.SCHEMA_API_KEY}}
-          SCHEMA_API_PASSWORD: ${{secrets.SCHEMA_API_PASSWORD}}
+          SCHEMA_API_SECRET: ${{secrets.SCHEMA_API_SECRET}}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           terraform apply -auto-approve tfplan
