@@ -2,7 +2,6 @@ spring:
   application:
     name: UserService
   kafka:
-    # Required connection configs for Kafka producer, consumer, and admin
     producer:
       bootstrap-servers: pkc-41wq6.eu-west-2.aws.confluent.cloud:9092
       security.protocol: SASL_SSL
@@ -10,6 +9,11 @@ spring:
       sasl.mechanism: PLAIN
       # Required for correctness in Apache Kafka clients prior to 2.6
       client.dns.lookup: use_all_dns_ips
+      auth:
+        user:
+          api:
+            key: ${SCHEMA_API_KEY}
+            password: ${SCHEMA_API_SECRET}
     properties:
       schema.registry.url: https://psrc-8qmnr.eu-west-2.aws.confluent.cloud # URL of your schema registry
 

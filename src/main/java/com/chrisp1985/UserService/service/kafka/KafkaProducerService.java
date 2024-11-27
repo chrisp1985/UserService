@@ -1,7 +1,7 @@
-package com.chrisp1985.UserService.sevice.kafka;
+package com.chrisp1985.UserService.service.kafka;
 
-import com.chrisp1985.UserService.dto.User;
 import com.chrisp1985.UserService.metrics.UserServiceMetrics;
+import com.chrisp1985.UserService.userdata.User;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 public class KafkaProducerService {
 
-    private static final String TOPIC_NAME = "test-topic";
+    private static final String TOPIC_NAME = "data-user";
 
     private final KafkaTemplate<String, User> kafkaTemplate;
 
@@ -36,12 +36,13 @@ public class KafkaProducerService {
         String name = names[ThreadLocalRandom.current().nextInt(names.length)];
         int id = ThreadLocalRandom.current().nextInt(0, 10000);
         int value = ThreadLocalRandom.current().nextInt(0, 23000);
-        User randomUser = new User(name, id, value);
-        log.info("Creating user {} with an id of {} and a value of {}", randomUser.name(), randomUser.id(), randomUser.value());
+
+        User randomUser = new User(id, name, value);
+        log.info("Creating user {} with an id of {} and a value of {}", randomUser.getName(), randomUser.getId(), randomUser.getValue());
         return randomUser;
     }
 
-    @Scheduled(fixedRate = 20000)
+    @Scheduled(fixedRate = 60000)
     @SneakyThrows
     public void sendTransaction() {
 
@@ -52,7 +53,7 @@ public class KafkaProducerService {
     }
 
     public void sendKafkaMessage(User user) {
-        kafkaTemplate.send(TOPIC_NAME, user.name(), user)
+        kafkaTemplate.send(TOPIC_NAME, user.getName(), user)
                 .whenComplete((sendResult, throwable) -> {
                     if(throwable!=null) {
                         onFailure(throwable);

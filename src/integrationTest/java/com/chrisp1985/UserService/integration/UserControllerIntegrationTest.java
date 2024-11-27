@@ -1,10 +1,11 @@
 package com.chrisp1985.UserService.integration;
 
 import com.chrisp1985.UserService.controller.UserController;
-import com.chrisp1985.UserService.dto.User;
-import com.chrisp1985.UserService.integration.libs.UserDeserializer;
 import com.chrisp1985.UserService.metrics.UserServiceMetrics;
-import com.chrisp1985.UserService.sevice.kafka.KafkaProducerService;
+import com.chrisp1985.UserService.service.kafka.KafkaProducerService;
+import com.chrisp1985.UserService.userdata.User;
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -12,9 +13,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -27,17 +26,13 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
+
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-public class UserControllerV2IntegrationTest {
+public class UserControllerIntegrationTest {
 
     @LocalServerPort
     private Integer port;
@@ -49,7 +44,7 @@ public class UserControllerV2IntegrationTest {
 
     private Consumer<String, User> consumer;
 
-    private final static String TOPIC_NAME = "test-topic";
+    private final static String TOPIC_NAME = "user-creation";
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
@@ -81,7 +76,7 @@ public class UserControllerV2IntegrationTest {
                 "false"
         );
         consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UserDeserializer.class);
+        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         consumerProps.put("spring.kafka.producer.security.protocol", "PLAINTEXT");
         consumerProps.put("spring.kafka.producer.sasl.mechanism", "PLAIN");
         consumerProps.put("spring.kafka.producer.user.topic", TOPIC_NAME);
@@ -97,17 +92,18 @@ public class UserControllerV2IntegrationTest {
     }
 
     @Test
-    void testAddValidListUser() throws InterruptedException {
-        given()
+    void testAddCustomUser() throws InterruptedException {
+        // Act
+        RestAssured.given()
                 .baseUri("http://localhost:" + port)
                 .contentType(ContentType.JSON)
-                .body("[{\n" +
-                        "    \"name\": \"testAddValidListUser\",\n" +
+                .body("{\n" +
+                        "    \"name\": \"testAddCustomUser\",\n" +
                         "    \"id\": 23200,\n" +
                         "    \"value\": 1111\n" +
-                        "}]")
+                        "}")
                 .when()
-                .post("/user/v2/kafkaUser")
+                .post("/user/v1/kafkaUser")
                 .then()
                 .statusCode(200);
 
@@ -117,64 +113,40 @@ public class UserControllerV2IntegrationTest {
         ConsumerRecord<String, User> record = KafkaTestUtils.getRecords(consumer)
                 .records(new TopicPartition(TOPIC_NAME, 0))
                 .stream()
-                .filter(a -> a.value().name().equals("testAddValidListUser"))
+                .filter(a -> a.value().getName().equals("testAddCustomUser"))
                 .findFirst().orElse(null);
-        assertNotNull(record);
-        assertEquals("testAddValidListUser", record.key());
-        assertEquals(1111, record.value().value());
+        Assertions.assertNotNull(record);
+        Assertions.assertEquals("testAddCustomUser", record.key());
+        Assertions.assertEquals(1111, record.value().getValue());
     }
 
     @Test
-    void testAddValidMultipleListUsers() throws InterruptedException {
-        given()
+    void testAddInvalidUser() {
+        RestAssured.given()
                 .baseUri("http://localhost:" + port)
                 .contentType(ContentType.JSON)
-                .body("[" +
-                        "{\n" +
-                        "    \"name\": \"testAddValidMultipleListUsers\",\n" +
-                        "    \"id\": 23200,\n" +
-                        "    \"value\": 1111\n" +
-                        "}," +
-                        "{\n" +
-                        "    \"name\": \"testAddValidMultipleListUsers2\",\n" +
-                        "    \"id\": 23202,\n" +
-                        "    \"value\": 1112\n" +
-                        "}," +
-                        "{\n" +
-                        "    \"name\": \"testAddValidMultipleListUsers3\",\n" +
-                        "    \"id\": 23203,\n" +
-                        "    \"value\": 1113\n" +
-                        "}" +
-                        "]")
+                .body("[{\n" +
+                        "    \"testParam\": \"testValue\",\n" +
+                        "    \"id\": 23200\n" +
+                        "}]")
                 .when()
-                .post("/user/v2/kafkaUser")
+                .post("/user/v1/kafkaUser")
                 .then()
-                .statusCode(200);
-
-        Thread.sleep(2000); // Required for data to be added to Kafka topic.
-
-        // Assert
-        List<ConsumerRecord<String, User>> record = KafkaTestUtils.getRecords(consumer)
-                .records(new TopicPartition(TOPIC_NAME, 0))
-                .stream()
-                .filter(a -> a.value().name().contains("testAddValidMultipleListUsers"))
-                .collect(Collectors.toList());
-        assertNotNull(record);
-        assertEquals(3, (long) record.size());
+                .statusCode(400);
     }
 
     @Test
-    void testAddInvalidSingleUser() {
-        given()
+    void testAddInvalidTypeUser() {
+        RestAssured.given()
                 .baseUri("http://localhost:" + port)
                 .contentType(ContentType.JSON)
                 .body("{\n" +
-                        "    \"name\": \"testAddInvalidSingleUser\",\n" +
+                        "    \"name\": \"testAddInvalidTypeUser\",\n" +
                         "    \"id\": 23200,\n" +
-                        "    \"value\": 1111\n" +
+                        "    \"value\": \"testAddInvalidTypeUser\"\n" +
                         "}")
                 .when()
-                .post("/user/v2/kafkaUser")
+                .post("/user/v1/kafkaUser")
                 .then()
                 .statusCode(400);
     }

@@ -1,8 +1,8 @@
 package com.chrisp1985.UserService.unit;
 
-import com.chrisp1985.UserService.dto.User;
 import com.chrisp1985.UserService.metrics.UserServiceMetrics;
-import com.chrisp1985.UserService.sevice.kafka.KafkaProducerService;
+import com.chrisp1985.UserService.service.kafka.KafkaProducerService;
+import com.chrisp1985.UserService.userdata.User;
 import groovy.util.logging.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @Slf4j
-public class KafkaProducerTests {
+public class KafkaProducerTest {
 
 	@InjectMocks
 	private KafkaProducerService kafkaProducerService;
@@ -35,15 +35,15 @@ public class KafkaProducerTests {
 		User generatedUser = kafkaProducerService.generateUser();
 
 		assertNotNull(generatedUser);
-		assertNotNull(generatedUser.name());
-		assertNotNull(generatedUser.id());
-		assertNotNull(generatedUser.value());
+		assertNotNull(generatedUser.getName());
+		assertNotNull(generatedUser.getId());
+		assertNotNull(generatedUser.getValue());
 	}
 
 	@Test
 	public void onSuccessMetricsCapturedTest() {
 
-		User testUser = new User("TestUser", 123, 100);
+		User testUser = new User(123, "TestUser", 100);
 		SendResult<String, User> sendResult = mock(SendResult.class);
 
 		when(kafkaTemplate.send(any(), any(), any())).thenReturn(CompletableFuture.completedFuture(sendResult));
@@ -55,7 +55,7 @@ public class KafkaProducerTests {
 	@Test
 	public void onFailureNoMetricsCapturedTest() {
 
-		User testUser = new User("TestUser", 123, 100);
+		User testUser = new User( 123, "TestUser",100);
 		CompletableFuture<SendResult<String, User>> future = new CompletableFuture<>();
 		future.completeExceptionally(new RuntimeException("Kafka send failed"));
 

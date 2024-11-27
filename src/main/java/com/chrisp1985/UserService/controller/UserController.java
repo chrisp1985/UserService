@@ -1,7 +1,7 @@
 package com.chrisp1985.UserService.controller;
 
-import com.chrisp1985.UserService.dto.User;
-import com.chrisp1985.UserService.sevice.kafka.KafkaProducerService;
+import com.chrisp1985.UserService.service.kafka.KafkaProducerService;
+import com.chrisp1985.UserService.userdata.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

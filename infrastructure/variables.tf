@@ -12,6 +12,20 @@ variable "confluent_secret" {
   default     = "cloud-api-secret-default"
 }
 
+variable "confluent_schema_key" {
+  description = "Confluent Cloud Schema API Key"
+  type        = string
+  sensitive   = true
+  default     = "confluent-schema-api-key-default"
+}
+
+variable "confluent_schema_secret" {
+  description = "Confluent Cloud Schema API Secret"
+  type        = string
+  sensitive   = true
+  default     = "confluent-schema-api-secret-default"
+}
+
 variable "aws_access_key" {
   description = "AWS API Key"
   type        = string

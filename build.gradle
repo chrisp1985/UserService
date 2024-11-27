@@ -1,9 +1,13 @@
+import com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask
+import com.github.davidmc24.gradle.plugin.avro.ResolveAvroDependenciesTask
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.5'
 	id 'io.spring.dependency-management' version '1.1.6'
 	id 'com.bmuschko.docker-spring-boot-application' version '9.4.0'
 	id 'jacoco'
+	id "com.github.davidmc24.gradle.plugin.avro" version '1.9.1'
 }
 
 group = 'com.chrisp1985'
@@ -17,9 +21,12 @@ java {
 
 sourceSets {
 	integrationTest {
+		compileClasspath += sourceSets.main.output + sourceSets.test.output
+		runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+	}
+	main {
 		java {
-			srcDir 'src/integration-test/java'
-			srcDir 'build/generated/java'
+			srcDirs += 'build/generated-main-avro-java'
 		}
 	}
 }
@@ -40,6 +47,11 @@ repositories {
 	}
 }
 
+avro {
+	gettersReturnOptional = true
+	optionalGettersForNullableFieldsOnly = true
+}
+
 ext {
 	set('springCloudVersion', "2023.0.3")
 }
@@ -50,13 +62,13 @@ dependencies {
 
 	// Spring Kafka
 	implementation 'org.springframework.kafka:spring-kafka'
-	testImplementation 'org.springframework.kafka:spring-kafka-test'
+	implementation 'io.confluent:kafka-avro-serializer:7.7.1'
+	implementation 'org.apache.avro:avro:1.11.3'
 
 	// Spring
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator:3.3.4'
 	implementation 'org.springframework:spring-webflux:6.1.13'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok:1.18.34'
@@ -65,16 +77,19 @@ dependencies {
 	// Test
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-rest'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.1.4'
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
-	testImplementation 'io.rest-assured:rest-assured'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	testImplementation 'org.testcontainers:testcontainers:1.20.3'
-	testImplementation 'org.testcontainers:kafka:1.20.3'
-	testImplementation 'org.testcontainers:junit-jupiter:1.20.3'
-
-
+	// IntegrationTest
+	integrationTestImplementation 'org.springframework.kafka:spring-kafka'
+	integrationTestImplementation 'io.confluent:kafka-avro-serializer:7.7.1'
+	integrationTestImplementation 'org.springframework.kafka:spring-kafka-test'
+	integrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
+	integrationTestImplementation 'io.rest-assured:rest-assured'
+	integrationTestImplementation 'org.testcontainers:testcontainers:1.20.3'
+	integrationTestImplementation 'org.testcontainers:kafka:1.20.3'
+	integrationTestImplementation 'org.testcontainers:junit-jupiter:1.20.3'
 
 	// Observability
 	implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.13.6'
@@ -86,6 +101,21 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.register("generateAvro", GenerateAvroJavaTask) {
+	source("src/main/resources/avro")
+	outputDir = file("build/generated-main-avro-java")
+}
+
+tasks.register("resolveAvroDependencies", ResolveAvroDependenciesTask) {
+	source("src/main/resources/avro")
+	outputDir = file("build/avro/resolved")
+}
+
+tasks.named("compileJava").configure {
+	source(generateAvro)
+	source(resolveAvroDependencies)
 }
 
 docker {

@@ -1,12 +1,13 @@
 package com.chrisp1985.UserService.integration;
 
-import com.chrisp1985.UserService.dto.User;
-import com.chrisp1985.UserService.integration.libs.UserDeserializer;
 import com.chrisp1985.UserService.metrics.UserServiceMetrics;
-import com.chrisp1985.UserService.sevice.kafka.KafkaProducerService;
+import com.chrisp1985.UserService.service.kafka.KafkaProducerService;
+import com.chrisp1985.UserService.userdata.User;
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +15,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.kafka.KafkaContainer;
@@ -23,11 +23,10 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
 @Testcontainers
-public class KafkaProducerIntegrationTests {
+public class KafkaProducerIntegrationTest {
 
     @Container
     static final KafkaContainer kafkaContainer =
@@ -36,7 +35,7 @@ public class KafkaProducerIntegrationTests {
 
     private Consumer<String, User> consumer;
 
-    private final static String TOPIC_NAME = "test-topic";
+    private final static String TOPIC_NAME = "user-creation";
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
@@ -65,7 +64,7 @@ public class KafkaProducerIntegrationTests {
                 "false"
         );
         consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UserDeserializer.class);
+        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         consumerProps.put("spring.kafka.producer.security.protocol", "PLAINTEXT");
         consumerProps.put("spring.kafka.producer.sasl.mechanism", "PLAIN");
         consumerProps.put("spring.kafka.producer.user.topic", TOPIC_NAME);
@@ -82,13 +81,13 @@ public class KafkaProducerIntegrationTests {
 
     @Test
     public void connectionEstablished() {
-        assertThat(kafkaContainer.isRunning()).isTrue();
+        AssertionsForClassTypes.assertThat(kafkaContainer.isRunning()).isTrue();
     }
 
     @Test
     public void testSendKafkaMessageSuccess() throws InterruptedException {
         // Arrange
-        User testUser = new User("TestUser", 123, 100);
+        User testUser = new User( 123, "TestUser",100);
 
         // Act
         kafkaProducerService.sendKafkaMessage(testUser);
@@ -98,19 +97,19 @@ public class KafkaProducerIntegrationTests {
         ConsumerRecord<String, User> testRecord = KafkaTestUtils.getRecords(consumer)
                 .records(new TopicPartition(TOPIC_NAME, 0))
                 .stream()
-                .filter(a -> a.value().name().equals(testUser.name()))
+                .filter(a -> a.value().getName().equals(testUser.getName()))
                 .findFirst().orElse(null);
 
         // Assert
         Assertions.assertNotNull(testRecord);
-        Assertions.assertEquals(testUser.name(), testRecord.key());
+        Assertions.assertEquals(testUser.getName(), testRecord.key());
         Assertions.assertEquals(testUser, testRecord.value());
     }
 
     @Test
     public void testSendKafkaMessageMetricsRecorded() throws InterruptedException {
         // Arrange
-        User testUser = new User("TestUser", 123, 100);
+        User testUser = new User(123, "TestUser", 100);
         double starter = userServiceMetrics.getRecordCount();
 
         // Act
