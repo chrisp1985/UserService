@@ -50,6 +50,8 @@ resource "aws_apprunner_service" "example" {
         runtime_environment_variables = {
           "CLUSTER_API_KEY" = var.confluent_key
           "CLUSTER_API_SECRET" = var.confluent_secret
+          "SCHEMA_API_KEY" = var.confluent_schema_key
+          "SCHEMA_API_SECRET" = var.confluent_schema_secret
         }
       }
       image_identifier      = format("%s:%s","195571588534.dkr.ecr.eu-west-2.amazonaws.com/chrisp1985_ecr_docker_repo",var.image_tag)
