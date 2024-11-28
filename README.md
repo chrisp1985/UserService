@@ -19,7 +19,7 @@ can be seen at http://(app_runner_dns_host)/swagger-ui/index.html.
 The unit tests use Mockito to mock the various components used in a service and then inject them into the service under test.
 Unit testing focuses on code logic, making sure each of the small units that makes up a service works properly. They run
 in very little time and should steer clear of using the @SpringBootTest annotation as we don't need the full Spring context
-to run tests.
+to run tests. 
 
 ### Integration
 The integration tests use testcontainers and focus on booting up the service and interacting with dockerised containers to 
