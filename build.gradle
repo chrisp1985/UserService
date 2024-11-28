@@ -120,10 +120,9 @@ tasks.named("compileJava").configure {
 
 docker {
 	springBootApplication {
-		baseImage = 'openjdk:24-jdk-slim-bookworm'
+		baseImage = 'openjdk:17.0.1-jdk-slim'
 
 		images = ["$build_image_name:latest"]
-		jvmArgs = ['-Dspring.profiles.active=prod', '-Xmx2048m']
 	}
 }
 

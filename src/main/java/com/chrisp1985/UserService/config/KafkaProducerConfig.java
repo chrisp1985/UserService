@@ -2,6 +2,7 @@ package com.chrisp1985.UserService.config;
 
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@Slf4j
 public class KafkaProducerConfig {
 
     @Value("${spring.kafka.producer.sasl.jaas.config}")
@@ -51,7 +53,6 @@ public class KafkaProducerConfig {
         producerProps.put("security.protocol", security_protocol);
         producerProps.put("basic.auth.credentials.source", "USER_INFO");
         producerProps.put("basic.auth.user.info", String.format("%s:%s", schema_registry_api_key, schema_registry_api_secret));
-
         return new DefaultKafkaProducerFactory<>(producerProps);
     }
 
