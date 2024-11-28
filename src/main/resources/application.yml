@@ -16,7 +16,9 @@ spring:
             secret: ${SCHEMA_API_SECRET}
     properties:
       schema.registry.url: https://psrc-8qmnr.eu-west-2.aws.confluent.cloud # URL of your schema registry
-
+logging:
+  level:
+    org.apache.kafka: DEBUG
 management:
   endpoints:
     health:
