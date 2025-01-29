@@ -20,8 +20,8 @@ public class UserControllerv2 {
     @Autowired
     KafkaProducerService kafkaProducerService;
 
-    @PostMapping(produces = "application/json")
-    public void addCustomUser(@RequestBody List<User> user) throws IOException {
+    @PostMapping(value = "/add", produces = "application/json")
+    public void addCustomUser(@RequestBody List<User> user) {
 
         for(com.chrisp1985.UserService.userdata.User indUser : user) {
             kafkaProducerService.sendKafkaMessage(indUser);

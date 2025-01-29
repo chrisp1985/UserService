@@ -22,7 +22,7 @@ public class UserController {
         this.kafkaProducerService = kafkaProducerService;
     }
 
-    @PostMapping(produces = "application/json")
+    @PostMapping(value = "/add", produces = "application/json")
     public ResponseEntity<String> addCustomUser(@RequestBody User user) {
         kafkaProducerService.sendKafkaMessage(user);
         log.info("Pushed via API: {}", user);
