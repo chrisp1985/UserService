@@ -7,6 +7,7 @@ import com.chrisp1985.UserService.userdata.User;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -34,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 public class UserControllerV2IntegrationTest {
@@ -48,7 +52,7 @@ public class UserControllerV2IntegrationTest {
 
     private Consumer<String, User> consumer;
 
-    private final static String TOPIC_NAME = "user-creation";
+    private final static String TOPIC_NAME = "data-user";
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
@@ -56,7 +60,7 @@ public class UserControllerV2IntegrationTest {
     @Autowired
     private KafkaTemplate<String, User> kafkaTemplate;
 
-    @Autowired
+    @Mock
     private UserServiceMetrics userServiceMetrics;
 
     @Autowired
@@ -70,6 +74,7 @@ public class UserControllerV2IntegrationTest {
         registry.add("spring.kafka.producer.user.topic", () -> TOPIC_NAME);
         registry.add("spring.kafka.producer.sasl.jaas.config", () ->
                 "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"\" password=\"\";");
+        registry.add("spring.kafka.properties.schema.registry.url", () -> "mock://testcontainers-schema-registry");
     }
 
     @BeforeEach
@@ -85,6 +90,9 @@ public class UserControllerV2IntegrationTest {
         consumerProps.put("spring.kafka.producer.sasl.mechanism", "PLAIN");
         consumerProps.put("spring.kafka.producer.user.topic", TOPIC_NAME);
         consumerProps.put("spring.kafka.producer.sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"\" password=\"\";");
+        consumerProps.put("schema.registry.url", "mock://testcontainers-schema-registry");
+        consumerProps.put("specific.avro.reader", true);
+
 
         consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Collections.singletonList(TOPIC_NAME));
@@ -96,7 +104,7 @@ public class UserControllerV2IntegrationTest {
     }
 
     @Test
-    void testAddValidListUser() throws InterruptedException {
+    void testAddValidListUserToKafka() throws InterruptedException {
         RestAssured.given()
                 .baseUri("http://localhost:" + port)
                 .contentType(ContentType.JSON)
@@ -106,14 +114,14 @@ public class UserControllerV2IntegrationTest {
                         "    \"value\": 1111\n" +
                         "}]")
                 .when()
-                .post("/user/v2/kafkaUser")
+                .post("/user/v2/kafkaUser/add")
                 .then()
                 .statusCode(200);
 
         Thread.sleep(1000); // Required for data to be added to Kafka topic.
 
         // Assert
-        ConsumerRecord<String, User> record = KafkaTestUtils.getRecords(consumer)
+        var record = KafkaTestUtils.getRecords(consumer)
                 .records(new TopicPartition(TOPIC_NAME, 0))
                 .stream()
                 .filter(a -> a.value().getName().equals("testAddValidListUser"))
@@ -124,7 +132,7 @@ public class UserControllerV2IntegrationTest {
     }
 
     @Test
-    void testAddValidMultipleListUsers() throws InterruptedException {
+    void testAddValidMultipleListUsersToKafka() throws InterruptedException {
         RestAssured.given()
                 .baseUri("http://localhost:" + port)
                 .contentType(ContentType.JSON)
@@ -146,7 +154,7 @@ public class UserControllerV2IntegrationTest {
                         "}" +
                         "]")
                 .when()
-                .post("/user/v2/kafkaUser")
+                .post("/user/v2/kafkaUser/add")
                 .then()
                 .statusCode(200);
 
@@ -163,7 +171,7 @@ public class UserControllerV2IntegrationTest {
     }
 
     @Test
-    void testAddInvalidSingleUser() {
+    void testAddInvalidSingleUserReturnsError() {
         RestAssured.given()
                 .baseUri("http://localhost:" + port)
                 .contentType(ContentType.JSON)
@@ -173,8 +181,25 @@ public class UserControllerV2IntegrationTest {
                         "    \"value\": 1111\n" +
                         "}")
                 .when()
-                .post("/user/v2/kafkaUser")
+                .post("/user/v2/kafkaUser/add")
                 .then()
                 .statusCode(400);
+    }
+
+    @Test
+    void testResponseMatchesExpectedSchema() {
+        RestAssured.given()
+                .baseUri("http://localhost:" + port)
+                .contentType(ContentType.JSON)
+                .body("[{\n" +
+                        "    \"name\": \"testResponseMatchesExpectedSchema\",\n" +
+                        "    \"id\": 24200,\n" +
+                        "    \"value\": 1112\n" +
+                        "}]")
+                .when()
+                .post("/user/v2/kafkaUser/add")
+                .then()
+                .assertThat().statusCode(200)
+                .body(matchesJsonSchemaInClasspath("userControllerV2Schema.json"));
     }
 }

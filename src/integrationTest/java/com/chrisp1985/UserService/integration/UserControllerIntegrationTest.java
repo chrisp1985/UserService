@@ -2,8 +2,8 @@ package com.chrisp1985.UserService.integration;
 
 import com.chrisp1985.UserService.controller.UserController;
 import com.chrisp1985.UserService.metrics.UserServiceMetrics;
+import com.chrisp1985.UserService.model.UserDto;
 import com.chrisp1985.UserService.service.kafka.KafkaProducerService;
-import com.chrisp1985.UserService.userdata.User;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -42,7 +42,7 @@ public class UserControllerIntegrationTest {
             new KafkaContainer(DockerImageName.parse("apache/kafka-native:3.8.0"))
                     .waitingFor(Wait.forListeningPort());
 
-    private Consumer<String, User> consumer;
+    private Consumer<String, UserDto> consumer;
 
     private final static String TOPIC_NAME = "user-creation";
 
@@ -50,7 +50,7 @@ public class UserControllerIntegrationTest {
     private KafkaProducerService kafkaProducerService;
 
     @Autowired
-    private KafkaTemplate<String, User> kafkaTemplate;
+    private KafkaTemplate<String, UserDto> kafkaTemplate;
 
     @Autowired
     private UserServiceMetrics userServiceMetrics;
@@ -110,7 +110,7 @@ public class UserControllerIntegrationTest {
         Thread.sleep(1000); // Required for data to be added to Kafka topic.
 
         // Assert
-        ConsumerRecord<String, User> record = KafkaTestUtils.getRecords(consumer)
+        ConsumerRecord<String, UserDto> record = KafkaTestUtils.getRecords(consumer)
                 .records(new TopicPartition(TOPIC_NAME, 0))
                 .stream()
                 .filter(a -> a.value().getName().equals("testAddCustomUser"))

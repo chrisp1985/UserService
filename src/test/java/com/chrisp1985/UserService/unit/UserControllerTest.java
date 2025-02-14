@@ -37,24 +37,4 @@ public class UserControllerTest {
         Assertions.assertEquals("User created successfully", response.getBody());
         Assertions.assertEquals(200, response.getStatusCode().value());
     }
-
-    @Test
-    void addingNullValuesAddsCustomUserTest() {
-        User testUser = new User(0, "", 0);
-//
-//        // Act
-//        mockMvc.perform(post("/user/v1/kafkaUser")
-//                        .content(new ObjectMapper().writeValueAsString(invalidUser)))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(jsonPath("$.name").value("Name must be between 2 and 50 characters"))
-//                .andExpect(jsonPath("$.email").value("Email should be valid"));
-//
-//
-//        ResponseEntity<String> response = userController.addCustomUser(testUser);
-//
-//        // Assert
-//        verify(kafkaProducerService, times(1)).sendKafkaMessage(testUser);
-//        Assertions.assertEquals("User created successfully", response.getBody());
-//        Assertions.assertEquals(200, response.getStatusCode().value());
-    }
 }
