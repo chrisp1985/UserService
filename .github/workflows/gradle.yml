@@ -77,6 +77,28 @@ jobs:
     # - name: Build with Gradle 8.5
     #   run: gradle build
 
+  report-ltc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Workflow Details
+        run: |
+          START_TIME=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+          | jq -r '.created_at')
+
+          END_TIME=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+          | jq -r '.updated_at')
+
+          # Convert to Unix timestamps
+          START_TIMESTAMP=$(date -d "$START_TIME" +%s)
+          END_TIMESTAMP=$(date -d "$END_TIME" +%s)
+
+          # Calculate Lead Time in seconds
+          LEAD_TIME=$((END_TIMESTAMP - START_TIMESTAMP))
+
+          echo "Lead Time: $LEAD_TIME seconds"   
+
   dependency-submission:
 
     runs-on: ubuntu-latest
