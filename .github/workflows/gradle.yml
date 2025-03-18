@@ -188,3 +188,19 @@ jobs:
     
             # Store for later use
             echo "lead_time=$LEAD_TIME" >> $GITHUB_ENV
+
+      - name: Capture Deployment Frequency
+        id: capture-df
+        run: |
+          # Set the start date (7 days ago)
+          START_DATE=$(date -u -d "7 days ago" +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Fetch the number of successful deployments in the past 7 days
+          DEPLOYMENT_COUNT=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs?status=success&per_page=100" | \
+            jq --arg start "$START_DATE" '[.workflow_runs[] | select(.created_at >= $start)] | length')
+          
+          echo "Deployments in last 7 days: $DEPLOYMENT_COUNT"
+          
+          # Store the value for later use
+          echo "deployment_count=$DEPLOYMENT_COUNT" >> $GITHUB_ENV

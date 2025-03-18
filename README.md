@@ -43,3 +43,17 @@ using terraform and pulls the image from ECR to run.
 The flow looks like the below:
 
 <img src="src/main/resources/UserService_flow.png">
+
+
+## Metrics
+### DORA
+#### Lead Time for Change
+Lead Time for Change is calculated using the GitHub API. It takes the initial commit time and subtracts it from the time at which the
+deployment of the App Runner completes. This time can then be pushed to Compass, or Prometheus/Grafana etc to provide better visualisation.
+
+#### Deployment Frequency
+The Deployment Frequency is a measurement of how many deployments have been made over the past 7 days. This is best captured by recording
+each deployment as a metric that can be collected over a specified period of time rather than this method, as collecting over 7 days here
+doesn't give the kind of insight that helps determine trends.
+
+### Tests

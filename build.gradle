@@ -106,6 +106,7 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
 }
 
 tasks.register("generateAvro", GenerateAvroJavaTask) {
@@ -121,6 +122,20 @@ tasks.register("resolveAvroDependencies", ResolveAvroDependenciesTask) {
 tasks.named("compileJava").configure {
 	source(generateAvro)
 	source(resolveAvroDependencies)
+}
+
+jacocoTestReport {
+	dependsOn test
+
+	reports {
+		xml.required = true
+		csv.required = false
+		html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+	}
+}
+
+build {
+	dependsOn jacocoTestReport
 }
 
 docker {
