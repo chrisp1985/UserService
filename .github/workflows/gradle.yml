@@ -21,6 +21,13 @@ jobs:
   build_and_deploy:
 
     runs-on: ubuntu-latest
+
+    services:
+      pushgateway:
+        image: prom/pushgateway
+        ports:
+          - 9091:9091
+
     permissions:
       contents: read
 
@@ -204,3 +211,9 @@ jobs:
           
           # Store the value for later use
           echo "deployment_count=$DEPLOYMENT_COUNT" >> $GITHUB_ENV
+
+      - name: Push to Prometheus
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+              -d '{"deployment": "successful", "leadtime": "${{ env.lead_time }}", "project": "${{ github.repository }}", "timestamp": "$(date +%s)"}' \
+              https://bx9ufxvqfe.eu-west-2.awsapprunner.com/metrics/job/deployments

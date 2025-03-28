@@ -4,6 +4,7 @@ import com.chrisp1985.UserService.controller.UserController;
 import com.chrisp1985.UserService.metrics.UserServiceMetrics;
 import com.chrisp1985.UserService.model.UserDto;
 import com.chrisp1985.UserService.service.kafka.KafkaProducerService;
+import com.chrisp1985.UserService.userdata.User;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -14,6 +15,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.*;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -42,17 +44,17 @@ public class UserControllerIntegrationTest {
             new KafkaContainer(DockerImageName.parse("apache/kafka-native:3.8.0"))
                     .waitingFor(Wait.forListeningPort());
 
-    private Consumer<String, UserDto> consumer;
+    private Consumer<String, User> consumer;
 
-    private final static String TOPIC_NAME = "user-creation";
+    private final static String TOPIC_NAME = "data-user";
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
     @Autowired
-    private KafkaTemplate<String, UserDto> kafkaTemplate;
+    private KafkaTemplate<String, User> kafkaTemplate;
 
-    @Autowired
+    @Mock
     private UserServiceMetrics userServiceMetrics;
 
     @Autowired
@@ -66,6 +68,7 @@ public class UserControllerIntegrationTest {
         registry.add("spring.kafka.producer.user.topic", () -> TOPIC_NAME);
         registry.add("spring.kafka.producer.sasl.jaas.config", () ->
                 "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"\" password=\"\";");
+        registry.add("spring.kafka.properties.schema.registry.url", () -> "mock://testcontainers-schema-registry");
     }
 
     @BeforeEach
@@ -81,6 +84,8 @@ public class UserControllerIntegrationTest {
         consumerProps.put("spring.kafka.producer.sasl.mechanism", "PLAIN");
         consumerProps.put("spring.kafka.producer.user.topic", TOPIC_NAME);
         consumerProps.put("spring.kafka.producer.sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"\" password=\"\";");
+        consumerProps.put("schema.registry.url", "mock://testcontainers-schema-registry");
+        consumerProps.put("specific.avro.reader", true);
 
         consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Collections.singletonList(TOPIC_NAME));
@@ -103,14 +108,14 @@ public class UserControllerIntegrationTest {
                         "    \"value\": 1111\n" +
                         "}")
                 .when()
-                .post("/user/v1/kafkaUser")
+                .post("/user/v1/kafkaUser/add")
                 .then()
                 .statusCode(200);
 
         Thread.sleep(1000); // Required for data to be added to Kafka topic.
 
         // Assert
-        ConsumerRecord<String, UserDto> record = KafkaTestUtils.getRecords(consumer)
+        var record = KafkaTestUtils.getRecords(consumer)
                 .records(new TopicPartition(TOPIC_NAME, 0))
                 .stream()
                 .filter(a -> a.value().getName().equals("testAddCustomUser"))
@@ -130,7 +135,7 @@ public class UserControllerIntegrationTest {
                         "    \"id\": 23200\n" +
                         "}]")
                 .when()
-                .post("/user/v1/kafkaUser")
+                .post("/user/v1/kafkaUser/add")
                 .then()
                 .statusCode(400);
     }
@@ -146,7 +151,7 @@ public class UserControllerIntegrationTest {
                         "    \"value\": \"testAddInvalidTypeUser\"\n" +
                         "}")
                 .when()
-                .post("/user/v1/kafkaUser")
+                .post("/user/v1/kafkaUser/add")
                 .then()
                 .statusCode(400);
     }

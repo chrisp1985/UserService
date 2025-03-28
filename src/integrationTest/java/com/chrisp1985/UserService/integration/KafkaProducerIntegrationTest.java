@@ -35,7 +35,7 @@ public class KafkaProducerIntegrationTest {
 
     private Consumer<String, User> consumer;
 
-    private final static String TOPIC_NAME = "user-creation";
+    private final static String TOPIC_NAME = "data-user";
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
@@ -54,6 +54,7 @@ public class KafkaProducerIntegrationTest {
         registry.add("spring.kafka.producer.user.topic", () -> TOPIC_NAME);
         registry.add("spring.kafka.producer.sasl.jaas.config", () ->
                 "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"\" password=\"\";");
+        registry.add("spring.kafka.properties.schema.registry.url", () -> "mock://testcontainers-schema-registry");
     }
 
     @BeforeEach
@@ -69,6 +70,8 @@ public class KafkaProducerIntegrationTest {
         consumerProps.put("spring.kafka.producer.sasl.mechanism", "PLAIN");
         consumerProps.put("spring.kafka.producer.user.topic", TOPIC_NAME);
         consumerProps.put("spring.kafka.producer.sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"\" password=\"\";");
+        consumerProps.put("schema.registry.url", "mock://testcontainers-schema-registry");
+        consumerProps.put("specific.avro.reader", true);
 
         consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Collections.singletonList(TOPIC_NAME));

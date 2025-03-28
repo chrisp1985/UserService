@@ -51,9 +51,54 @@ The flow looks like the below:
 Lead Time for Change is calculated using the GitHub API. It takes the initial commit time and subtracts it from the time at which the
 deployment of the App Runner completes. This time can then be pushed to Compass, or Prometheus/Grafana etc to provide better visualisation.
 
+*How to Capture*: This is currently captured in the github workflow, and should be pushed to a Prometheus Push Gateway.
+
 #### Deployment Frequency
 The Deployment Frequency is a measurement of how many deployments have been made over the past 7 days. This is best captured by recording
 each deployment as a metric that can be collected over a specified period of time rather than this method, as collecting over 7 days here
 doesn't give the kind of insight that helps determine trends.
 
+*How to Capture*: This is currently captured in the github workflow, and should be pushed to a deployed Prometheus Push Gateway.
+
+#### Mean Time To Resolve
+This can be delegated fairly easily to PagerDuty. The PagerDuty API allows us to grab the MTTR for each of the alerts in a Production
+environment, and can be collected to see the trends in resolution times.
+
+*How to Capture*: This is currently captured in the github workflow, and should be pushed to a deployed Prometheus Push Gateway.
+
+#### Change Failure Rate
+This needs some input from both the CI/CD environment and something like Jira/PagerDuty to find the amount of issues found / changes made
+in production. Change Failure Rate should be captured in a separate collector service.
+
+
 ### Tests
+#### Test Coverage
+The Test Coverage report data 
+
+*How to Capture*: This is currently captured in the build.gradle, and is pushed to the local Prometheus Push Gateway.
+
+#### Test Results
+Test Results should be pushed to a Prometheus gateway after being run. This can be executed by running the docker compose file in
+the docker directory, with the `docker-compose up` command. This will set up a Prometheus Push Gateway, a Prometheus server and
+a Grafana Dashboard. Executing docker compose and running the tests will push the test results to the gateway, and on loading the
+grafana dashboard JSON will show the test results like this:
+
+<img src="src/main/resources/grafana_dashboard.png">
+
+*How to Capture*: This is currently captured by the [TestListener](src/integrationTest/java/com/chrisp1985/UserService/metrics/PrometheusTestListener.java), and is pushed to the local Prometheus Push Gateway.
+
+
+### Prometheus Collection
+The Prometheus yml scrapes from both the MetricsPushGateway hosted in AWS App Runner, and the local push gateway. The AWS hosted
+push gateway is used to collect the results from the builds (for Deployment Frequency and LTTC) whilst the local push gateway can
+be used for the tests.
+
+In normal circumstances, everything would push to a centralised push gateway and get scraped by a prometheus server hosted in AWS,
+but this is the least costly and easiest to set up .... setup I could do.
+
+When the local prometheus scrapes the 2 push gateways, the data is then available for Grafana to display info on:
+
+- JUnit Tests Passed.
+- JUnit Tests Failed.
+- Deployment Frequency.
+- Lead Time To Change.

@@ -78,12 +78,25 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok:1.18.34'
 	annotationProcessor 'org.projectlombok:lombok:1.18.34'
 
+	// Prometheus client and PushGateway dependencies
+	implementation 'io.prometheus:simpleclient:0.16.0'
+	implementation 'io.prometheus:simpleclient_pushgateway:0.16.0'
+
+	// Jsoup dependency for parsing HTML
+	implementation 'org.jsoup:jsoup:1.15.3' // or the latest version
+
 	// Test
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-rest'
 	implementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.2.0'
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.prometheus:simpleclient:0.16.0'
+	testImplementation 'io.prometheus:simpleclient_hotspot:0.16.0'
+	testImplementation 'io.prometheus:simpleclient_servlet:0.16.0'
+	testImplementation 'io.prometheus:simpleclient_httpserver:0.16.0'
+	testImplementation 'io.prometheus:simpleclient_pushgateway:0.16.0'
 
 	// IntegrationTest
 	integrationTestImplementation 'org.springframework.kafka:spring-kafka'
@@ -99,6 +112,12 @@ dependencies {
 	integrationTestImplementation 'org.springframework.boot:spring-boot-starter-actuator'
 	integrationTestImplementation 'org.springframework.boot:spring-boot-starter-web'
 
+	integrationTestImplementation 'io.prometheus:simpleclient:0.16.0'
+	integrationTestImplementation 'io.prometheus:simpleclient_hotspot:0.16.0'
+	integrationTestImplementation 'io.prometheus:simpleclient_servlet:0.16.0'
+	integrationTestImplementation 'io.prometheus:simpleclient_httpserver:0.16.0'
+	integrationTestImplementation 'io.prometheus:simpleclient_pushgateway:0.16.0'
+
 	// Documentation
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 
@@ -106,7 +125,25 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	testLogging {
+		events "passed", "failed", "skipped"
+	}
 	finalizedBy jacocoTestReport
+}
+
+tasks.register('integrationTest', Test) {
+	description = 'Runs the integration tests.'
+	group = 'verification'
+
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+	useJUnitPlatform()
+
+	shouldRunAfter test
+}
+
+tasks.named('check') {
+	dependsOn integrationTest
 }
 
 tasks.register("generateAvro", GenerateAvroJavaTask) {
@@ -129,7 +166,8 @@ jacocoTestReport {
 
 	reports {
 		xml.required = true
-		csv.required = false
+		csv.required = true
+		html.required = true
 		html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
 	}
 }
